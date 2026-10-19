@@ -1,6 +1,6 @@
 // Typed client for the FastAPI backend.
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://ihsg-backend.onrender.com/api/meta").replace(/\/$/, "");
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://ihsg-backend.onrender.com").replace(/\/$/, "");
 
 export type Direction = "UP" | "DOWN" | "FLAT";
 
