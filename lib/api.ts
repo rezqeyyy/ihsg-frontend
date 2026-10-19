@@ -2,6 +2,8 @@
 
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://ihsg-backend.onrender.com").replace(/\/$/, "");
 
+import { tr } from "./i18n";
+
 export type Direction = "UP" | "DOWN" | "FLAT";
 
 export interface FeatureInfo { key: string; label: string; group: string }
@@ -16,6 +18,7 @@ export interface Meta {
   n_trials: number;
   cv_rmse: Record<string, number>;
   intervals: Record<string, { q_lower: number; q_upper: number; test_coverage: number }>;
+  ensemble?: { method: string; weights: Record<string, number>; weight_selected_by: string } | null;
   data_first: string;
   data_last: string;
   replay_min: string;
@@ -112,7 +115,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     res = await fetch(`${API_URL}${path}`, { cache: "no-store", ...init });
   } catch {
-    throw new Error(`Backend tidak bisa dihubungi di ${API_URL}. Jalankan: uvicorn app.main:app --port 8000`);
+    // fetch only throws when no readable response arrived: server down/asleep, wrong URL, or blocked by CORS
+    const here = typeof window !== "undefined" ? window.location.origin : "this website";
+    const local = /localhost|127\.0\.0\.1/.test(API_URL);
+    throw new Error(local ? tr("api.local", { url: API_URL }) : tr("api.remote", { url: API_URL, here }));
   }
   if (!res.ok) {
     let detail = res.statusText;

@@ -1,6 +1,8 @@
 "use client";
 // Dependency-free SVG charts sized by viewBox so they scale with their container.
 import { useEffect, useMemo, useRef, useState } from "react";
+import { points } from "@/lib/format";
+import { useI18n } from "@/lib/i18n";
 
 const UP = "var(--up)";
 const DOWN = "var(--down)";
@@ -29,9 +31,10 @@ const niceTicks = (lo: number, hi: number, n = 5) => {
 export function DivergingBars({ rows, format }: {
   rows: { label: string; value: number }[]; format: (v: number) => string;
 }) {
+  const { t } = useI18n();
   const max = Math.max(1e-12, ...rows.map((r) => Math.abs(r.value)));
   return (
-    <div className="dbars" role="list" aria-label="Kontribusi tiap sinyal terhadap estimasi">
+    <div className="dbars" role="list" aria-label={t("chart.barsAria")}>
       {rows.map((r) => {
         const w = (Math.abs(r.value) / max) * 38;  // % of the track, leaves room for the value label
         const pos = r.value >= 0;
@@ -54,13 +57,14 @@ export function DivergingBars({ rows, format }: {
 
 /* ---------------------------------------------------------------- gauge */
 const ZONES = [
-  { to: 25, color: "var(--g1)", label: "Sangat bearish" },
-  { to: 40, color: "var(--g2)", label: "Bearish" },
-  { to: 60, color: "var(--g3)", label: "Netral" },
-  { to: 75, color: "var(--g4)", label: "Bullish" },
-  { to: 100, color: "var(--g5)", label: "Sangat bullish" },
+  { to: 25, color: "var(--g1)" },
+  { to: 40, color: "var(--g2)" },
+  { to: 60, color: "var(--g3)" },
+  { to: 75, color: "var(--g4)" },
+  { to: 100, color: "var(--g5)" },
 ];
 export function Gauge({ value }: { value: number }) {
+  const { t } = useI18n();
   const cx = 120, cy = 112, r = 92, w = 20;
   const ang = (v: number) => Math.PI * (1 - v / 100);
   const pt = (v: number, rr: number) => [cx + rr * Math.cos(ang(v)), cy - rr * Math.sin(ang(v))];
@@ -73,7 +77,7 @@ export function Gauge({ value }: { value: number }) {
   });
   const [nx, ny] = pt(Math.max(0, Math.min(100, value)), r - 4);
   return (
-    <svg className="chart" viewBox="0 0 240 132" role="img" aria-label={`Skor sentimen ${Math.round(value)} dari 100`}>
+    <svg className="chart" viewBox="0 0 240 132" role="img" aria-label={t("chart.gaugeAria", { v: Math.round(value) })}>
       {arcs}
       <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="var(--ink)" strokeWidth={3} strokeLinecap="round" />
       <circle cx={cx} cy={cy} r={6} fill="var(--ink)" />
@@ -91,11 +95,12 @@ export function RangeBar({ prev, est, lo, hi, actual }: {
   const vals = [prev, est, lo, hi, ...(actual != null ? [actual] : [])];
   const [a, b] = extent(vals, 0.18);
   const x = (v: number) => padX + ((v - a) / (b - a)) * (W - 2 * padX);
-  const fmt = (v: number) => new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(v);
+  const { t } = useI18n();
+  const fmt = (v: number) => points(v, 0);
   const estUp = est >= prev;
   return (
     <svg className="chart range" viewBox={`0 0 ${W} ${H}`} role="img" style={{ maxWidth: 560 }}
-      aria-label={`Rentang 95%: ${fmt(lo)} sampai ${fmt(hi)}, estimasi ${fmt(est)}, penutupan sebelumnya ${fmt(prev)}`}>
+      aria-label={t("chart.rangeAria", { lo: fmt(lo), hi: fmt(hi), est: fmt(est), prev: fmt(prev) })}>
       <line x1={padX} x2={W - padX} y1={46} y2={46} className="axis" />
       <rect x={x(lo)} y={36} width={Math.max(2, x(hi) - x(lo))} height={20} rx={10}
         fill={estUp ? "var(--up-soft)" : "var(--down-soft)"} />
@@ -103,13 +108,13 @@ export function RangeBar({ prev, est, lo, hi, actual }: {
       <text x={x(hi)} y={78} textAnchor="middle">{fmt(hi)}</text>
       {/* previous close */}
       <line x1={x(prev)} x2={x(prev)} y1={28} y2={64} stroke="var(--ink-3)" strokeWidth={2} strokeDasharray="3 3" />
-      <text x={x(prev)} y={20} textAnchor="middle">tutup kemarin</text>
+      <text x={x(prev)} y={20} textAnchor="middle">{t("chart.prevClose")}</text>
       {/* estimate */}
       <circle cx={x(est)} cy={46} r={8} fill={estUp ? UP : DOWN} stroke="var(--paper)" strokeWidth={2} />
       {actual != null && (
         <g>
           <path d={`M ${x(actual)} 58 l -6 10 h 12 z`} fill="var(--ink)" />
-          <text x={x(actual)} y={90} textAnchor="middle" style={{ fontWeight: 700, fill: "var(--ink)" }}>aktual</text>
+          <text x={x(actual)} y={90} textAnchor="middle" style={{ fontWeight: 700, fill: "var(--ink)" }}>{t("chart.actual")}</text>
         </g>
       )}
     </svg>
@@ -129,6 +134,7 @@ export function LineChart({ x, series, band, yFormat, xFormat, height = 260, zer
   zeroLine?: boolean;
   marker?: { x: number; label: string };
 }) {
+  const { t } = useI18n();
   const box = useRef<HTMLDivElement>(null);
   const [W, setW] = useState(760);
   useEffect(() => {
@@ -182,17 +188,17 @@ export function LineChart({ x, series, band, yFormat, xFormat, height = 260, zer
     <div style={{ position: "relative" }} ref={box}>
       <svg ref={ref} className="chart" viewBox={`0 0 ${W} ${H}`} onMouseMove={onMove} onMouseLeave={() => setHover(null)}
         role="img" aria-label={series.map((s) => s.name).join(", ")}>
-        {yt.map((t) => (
-          <g key={t}>
-            <line x1={L} x2={W - R} y1={sy(t)} y2={sy(t)} className="grid" />
-            <text x={L - 8} y={sy(t) + 4} textAnchor="end">{yFormat(t)}</text>
+        {yt.map((tk) => (
+          <g key={tk}>
+            <line x1={L} x2={W - R} y1={sy(tk)} y2={sy(tk)} className="grid" />
+            <text x={L - 8} y={sy(tk) + 4} textAnchor="end">{yFormat(tk)}</text>
           </g>
         ))}
         {zeroLine && y0 < 0 && y1 > 0 && <line x1={L} x2={W - R} y1={sy(0)} y2={sy(0)} className="axis" />}
-        {(numericX ? xtIdx : xtIdx).map((t) => {
-          const xv = numericX ? t : xs[t];
-          const lab = numericX ? (xFormat ? xFormat(t) : String(t)) : (xFormat ? xFormat(x[t]) : String(x[t]));
-          return <text key={String(t)} x={sx(xv)} y={H - 8} textAnchor="middle">{lab}</text>;
+        {xtIdx.map((tk) => {
+          const xv = numericX ? tk : xs[tk];
+          const lab = numericX ? (xFormat ? xFormat(tk) : String(tk)) : (xFormat ? xFormat(x[tk]) : String(x[tk]));
+          return <text key={String(tk)} x={sx(xv)} y={H - 8} textAnchor="middle">{lab}</text>;
         })}
         {bandPath && <path d={bandPath} fill={band!.color} opacity={0.16} />}
         {series.map((s) => (
@@ -221,7 +227,7 @@ export function LineChart({ x, series, band, yFormat, xFormat, height = 260, zer
       )}
       <div className="legend">
         {series.map((s) => <span key={s.name}><i style={{ background: s.color }} />{s.name}</span>)}
-        {band && <span><i style={{ background: band.color, opacity: .35, height: 8 }} />rentang 95%</span>}
+        {band && <span><i style={{ background: band.color, opacity: .35, height: 8 }} />{t("range95.lower")}</span>}
       </div>
     </div>
   );
@@ -231,20 +237,21 @@ export function LineChart({ x, series, band, yFormat, xFormat, height = 260, zer
 export function ShareBars({ groups, models, values, colors }: {
   groups: string[]; models: string[]; values: Record<string, Record<string, number>>; colors: string[];
 }) {
+  const { t } = useI18n();
   const max = Math.max(0.01, ...groups.flatMap((g) => models.map((m) => values[g]?.[m] ?? 0)));
   return (
-    <div style={{ display: "grid", gap: 14 }} aria-label="Porsi kepentingan per kelompok fitur">
+    <div style={{ display: "grid", gap: 14 }} aria-label={t("chart.shareAria")}>
       {groups.map((g) => (
         <div key={g}>
           <div className="small" style={{ fontWeight: 650, marginBottom: 4 }}>{g}</div>
           {models.map((m, mi) => {
             const v = values[g]?.[m] ?? 0;
             return (
-              <div key={m} style={{ display: "grid", gridTemplateColumns: "96px 1fr", alignItems: "center", gap: 8, margin: "3px 0" }}>
+              <div key={m} style={{ display: "grid", gridTemplateColumns: "104px 1fr", alignItems: "center", gap: 8, margin: "3px 0" }}>
                 <span className="xs muted">{m}</span>
                 <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ height: 12, borderRadius: 3, width: `${(v / max) * 78}%`, background: colors[mi % colors.length] }} />
-                  <span className="xs num" style={{ fontWeight: 650 }}>{(v * 100).toFixed(1).replace(".", ",")}%</span>
+                  <span className="xs num" style={{ fontWeight: 650 }}>{points(v * 100, 1)}%</span>
                 </span>
               </div>
             );

@@ -1,15 +1,18 @@
 "use client";
 import type { ReactNode } from "react";
 import type { Row } from "@/lib/api";
+import { modelLabel } from "@/lib/format";
+import { useI18n } from "@/lib/i18n";
 import { useAppState } from "./AppState";
 
 export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="error-box" role="alert">
-      <strong>Tidak bisa memuat data.</strong> {message}
+      <strong>{t("ui.loadError")}</strong> {message}
       {onRetry && (
         <div style={{ marginTop: 10 }}>
-          <button className="btn secondary" onClick={onRetry}>Coba lagi</button>
+          <button className="btn secondary" onClick={onRetry}>{t("ui.retry")}</button>
         </div>
       )}
     </div>
@@ -45,7 +48,8 @@ export function DataTable({ rows, columns, format, highlight, maxRows }: {
   highlight?: (row: Row) => boolean;
   maxRows?: number;
 }) {
-  if (!rows?.length) return <p className="muted small">Belum ada data. Jalankan notebook Colab sampai bagian 7 lalu salin folder hasilnya ke backend.</p>;
+  const { t } = useI18n();
+  if (!rows?.length) return <p className="muted small">{t("ui.empty")}</p>;
   const cols = columns ?? Object.keys(rows[0]).map((k) => ({
     key: k, label: k, align: typeof rows[0][k] === "number" ? ("r" as const) : undefined,
   }));
@@ -72,7 +76,9 @@ export function DataTable({ rows, columns, format, highlight, maxRows }: {
           ))}
         </tbody>
       </table>
-      {maxRows && rows.length > maxRows && <p className="xs faint" style={{ marginTop: 6 }}>{rows.length - maxRows} baris lain disembunyikan.</p>}
+      {maxRows && rows.length > maxRows && (
+        <p className="xs faint" style={{ marginTop: 6 }}>{t("ui.hiddenRows", { n: rows.length - maxRows })}</p>
+      )}
     </div>
   );
 }
@@ -80,30 +86,35 @@ export function DataTable({ rows, columns, format, highlight, maxRows }: {
 /** Session date + model + live toggle, shared by the estimate and simulator pages. */
 export function SessionControls({ allowLive = true, onRefreshLive }: { allowLive?: boolean; onRefreshLive?: () => void }) {
   const { meta, date, setDate, model, setModel, live, setLive } = useAppState();
+  const { t } = useI18n();
   if (!meta) return null;
   return (
     <div className="controls">
       {allowLive && (
-        <div className="seg" role="group" aria-label="Sumber data">
-          <button aria-pressed={!live} onClick={() => setLive(false)}>Tanggal historis</button>
-          <button aria-pressed={live} onClick={() => setLive(true)}>Data terbaru</button>
+        <div className="seg" role="group" aria-label={t("ctl.source")}>
+          <button aria-pressed={!live} onClick={() => setLive(false)}>{t("ctl.historical")}</button>
+          <button aria-pressed={live} onClick={() => setLive(true)}>{t("ctl.latest")}</button>
         </div>
       )}
       {(!live || !allowLive) && (
         <label className="field">
-          Sesi IHSG
+          {t("ctl.session")}
           <input type="date" value={date ?? meta.data_last} min={meta.replay_min} max={meta.replay_max}
             onChange={(e) => setDate(e.target.value || null)} />
         </label>
       )}
       <label className="field">
-        Model
+        {t("ctl.model")}
         <select value={model ?? meta.champion} onChange={(e) => setModel(e.target.value === meta.champion ? null : e.target.value)}>
-          {meta.models.map((m) => <option key={m} value={m}>{m}{m === meta.champion ? " (terbaik)" : ""}</option>)}
+          {meta.models.map((m) => (
+            <option key={m} value={m}>
+              {m === "Ensemble" ? modelLabel(m, meta.ensemble) : m}{m === meta.champion ? ` ${t("ctl.main")}` : ""}
+            </option>
+          ))}
         </select>
       </label>
       {live && allowLive && onRefreshLive && (
-        <button className="btn secondary" onClick={onRefreshLive}>Ambil ulang data</button>
+        <button className="btn secondary" onClick={onRefreshLive}>{t("ctl.refetch")}</button>
       )}
     </div>
   );

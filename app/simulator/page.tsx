@@ -2,22 +2,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, type Estimate, type Simulation } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
-import { directionWord, longDate, pct, points, pp, signedPoints, tone } from "@/lib/format";
+import { directionWord, featureLabel, longDate, pct, points, pp, signedPoints, tone } from "@/lib/format";
+import { useI18n, type TKey } from "@/lib/i18n";
 import { useAppState } from "@/components/AppState";
 import { DivergingBars, LineChart } from "@/components/charts";
 import { ErrorBox, Panel, SessionControls, Skeleton } from "@/components/ui";
 
-const SIGNALS = [
-  { key: "eido_ret", label: "EIDO & IDX ETF (return semalam)", min: -6, max: 6 },
-  { key: "nikkei_gap", label: "Nikkei 225 (gap pembukaan)", min: -4, max: 4 },
-  { key: "kospi_gap", label: "KOSPI (gap pembukaan)", min: -4, max: 4 },
-  { key: "hangseng_gap", label: "Hang Seng (gap pembukaan)", min: -4, max: 4 },
-  { key: "shanghai_gap", label: "Shanghai (gap pembukaan)", min: -4, max: 4 },
+const SIGNALS: { key: string; label: TKey; min: number; max: number }[] = [
+  { key: "eido_ret", label: "sim.eido", min: -6, max: 6 },
+  { key: "nikkei_gap", label: "sim.nikkei", min: -4, max: 4 },
+  { key: "kospi_gap", label: "sim.kospi", min: -4, max: 4 },
+  { key: "hangseng_gap", label: "sim.hangseng", min: -4, max: 4 },
+  { key: "shanghai_gap", label: "sim.shanghai", min: -4, max: 4 },
 ];
 const COLORS = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)"];
 
 export default function SimulatorPage() {
   const { meta, metaError, date, model } = useAppState();
+  const { t } = useI18n();
   const base = useApi<Estimate | null>(
     () => (meta ? api.estimate(date ?? undefined, model ?? undefined) : Promise.resolve(null)), [meta, date, model]);
   const [vals, setVals] = useState<Record<string, number>>({});
@@ -50,12 +52,8 @@ export default function SimulatorPage() {
     <>
       <div className="page-head">
         <div>
-          <h1>Simulator skenario</h1>
-          <p>
-            Geser sinyal pra-pasar untuk melihat seberapa peka estimasi terhadap tiap sinyal. Histori IHSG tetap.
-            EIDO dan IDX ETF digerakkan bersama karena pergerakannya hampir identik. Ini alat untuk memahami model,
-            bukan ramalan skenario.
-          </p>
+          <h1>{t("sim.title")}</h1>
+          <p>{t("sim.intro")}</p>
         </div>
         <SessionControls allowLive={false} />
       </div>
@@ -63,12 +61,12 @@ export default function SimulatorPage() {
       {!est && !base.error && <Skeleton h={300} />}
       {est && (
         <>
-          <Panel title={`Titik awal: sesi ${longDate(est.target_date)}`}
-            note={`Slider dimulai dari nilai yang benar-benar teramati pagi itu. Estimasi awal ${points(est.open_hat)} (${pct(est.y_hat, 3)}).`}
+          <Panel title={t("sim.start", { d: longDate(est.target_date) })}
+            note={t("sim.startNote", { open: points(est.open_hat), pct: pct(est.y_hat, 3) })}
             right={changed ? (
               <button className="btn secondary" onClick={() =>
                 setVals(Object.fromEntries(SIGNALS.map((s) => [s.key, +(est.features[s.key] * 100).toFixed(2)])))}>
-                Kembalikan ke nilai asli
+                {t("sim.reset")}
               </button>
             ) : undefined}>
             <div className="sliders">
@@ -78,12 +76,12 @@ export default function SimulatorPage() {
                 return (
                   <div className="slider" key={s.key}>
                     <label htmlFor={`sl-${s.key}`}>
-                      <span>{s.label}</span>
+                      <span>{t(s.label)}</span>
                       <span className={`num ${tone(v)}`}>{pct(v / 100, 2)}</span>
                     </label>
                     <input id={`sl-${s.key}`} type="range" min={s.min} max={s.max} step={0.05} value={v}
                       onChange={(e) => setVals((p) => ({ ...p, [s.key]: +e.target.value }))} />
-                    <div className="hint"><span>{s.min}%</span><span>asli {pct(orig / 100, 2)}</span><span>+{s.max}%</span></div>
+                    <div className="hint"><span>{s.min}%</span><span>{t("sim.observed", { v: pct(orig / 100, 2) })}</span><span>+{s.max}%</span></div>
                   </div>
                 );
               })}
@@ -96,34 +94,33 @@ export default function SimulatorPage() {
               <section className="panel" style={{ marginTop: 18 }}>
                 <div className="stat-row">
                   <div>
-                    <div className="label">Estimasi hasil simulasi</div>
+                    <div className="label">{t("sim.result")}</div>
                     <div className={`value num ${tone(sim.simulated.y_hat)}`}>{points(sim.simulated.open_hat)}</div>
                     <div className="small muted">{directionWord(sim.simulated.direction)} {pct(sim.simulated.y_hat, 3)}</div>
                   </div>
                   <div>
-                    <div className="label">Dibanding estimasi awal</div>
-                    <div className={`value num ${tone(sim.delta_points)}`}>{signedPoints(sim.delta_points)} poin</div>
+                    <div className="label">{t("sim.vsBase")}</div>
+                    <div className={`value num ${tone(sim.delta_points)}`}>{signedPoints(sim.delta_points)} {t("unit.pts")}</div>
                     <div className="small muted">{pp(sim.delta_return)} pp</div>
                   </div>
                   <div>
-                    <div className="label">Rentang 95%</div>
+                    <div className="label">{t("range95")}</div>
                     <div className="value num">{points(sim.simulated.lower_open, 0)} – {points(sim.simulated.upper_open, 0)}</div>
                   </div>
                 </div>
               </section>
               <div className="grid-2">
-                <Panel title="Kurva sensitivitas"
-                  note="Satu sinyal digeser dari −3% sampai +3%, sinyal lain tetap di nilai simulasi. Model pohon datar di luar rentang data latih, jadi skenario ekstrem tidak ikut membesar.">
+                <Panel title={t("sim.curves")} note={t("sim.curvesNote")}>
                   <LineChart
                     x={sim.curves[0].x}
-                    series={sim.curves.map((c, i) => ({ name: c.label, color: COLORS[i % COLORS.length], values: c.y }))}
+                    series={sim.curves.map((c, i) => ({ name: c.key === "eido_ret" ? t("sim.etfPair") : featureLabel(c.key, c.label), color: COLORS[i % COLORS.length], values: c.y }))}
                     yFormat={(v) => pct(v, 2)}
                     xFormat={(v) => pct(Number(v), 0)}
                     height={300}
                   />
                 </Panel>
-                <Panel title="Kontribusi sinyal (simulasi)" note="TreeSHAP untuk input hasil simulasi, dalam poin persentase.">
-                  <DivergingBars rows={sim.simulated.shap_ranked.map((s) => ({ label: s.label, value: s.value }))} format={(v) => pp(v)} />
+                <Panel title={t("sim.contrib")} note={t("sim.contribNote")}>
+                  <DivergingBars rows={sim.simulated.shap_ranked.map((s) => ({ label: featureLabel(s.key, s.label), value: s.value }))} format={(v) => pp(v)} />
                 </Panel>
               </div>
             </>

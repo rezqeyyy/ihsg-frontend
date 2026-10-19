@@ -199,6 +199,17 @@ p { margin: 0; }
 .theme-switch button[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-fg); }
 @media (pointer: coarse) { .theme-switch button { width: 40px; height: 36px; } }
 
+/* language switch + wrapper for both switches */
+.top-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.lang-switch { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: 999px; padding: 2px; background: var(--paper); }
+.lang-switch button {
+  border: 0; background: none; color: var(--ink-2); cursor: pointer; border-radius: 999px;
+  font: inherit; font-size: var(--t-xs); font-weight: 700; letter-spacing: .02em;
+  min-width: 34px; height: 30px; padding: 0 8px;
+}
+.lang-switch button[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-fg); }
+@media (pointer: coarse) { .lang-switch button { min-width: 40px; height: 36px; } }
+
 /* tablet: brand text shortens */
 @media (max-width: 1080px) {
   .brand small { display: none; }
