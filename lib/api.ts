@@ -1,8 +1,7 @@
 // Typed client for the FastAPI backend.
+import { tr } from "./i18n";
 
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://ihsg-backend.onrender.com").replace(/\/$/, "");
-
-import { tr } from "./i18n";
 
 export type Direction = "UP" | "DOWN" | "FLAT";
 
@@ -110,6 +109,8 @@ export interface History {
   backtest: { date: string; y: number; y_hat: number; mae_20: number | null; da_20: number | null }[];
 }
 
+let reached = false;  // true once any request got an answer: the backend is up and CORS works
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
@@ -118,8 +119,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     // fetch only throws when no readable response arrived: server down/asleep, wrong URL, or blocked by CORS
     const here = typeof window !== "undefined" ? window.location.origin : "this website";
     const local = /localhost|127\.0\.0\.1/.test(API_URL);
+    if (reached) throw new Error(tr("api.crash", { url: API_URL }));
     throw new Error(local ? tr("api.local", { url: API_URL }) : tr("api.remote", { url: API_URL, here }));
   }
+  reached = true;
   if (!res.ok) {
     let detail = res.statusText;
     try { detail = (await res.json()).detail ?? detail; } catch { /* keep statusText */ }

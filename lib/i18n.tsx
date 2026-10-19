@@ -263,12 +263,15 @@ const D = {
   "data.verifyDone": { id: "Hasil perbandingan 100 hari sampel dengan data resmi IDX.", en: "Comparison of 100 sampled days with official IDX data." },
   "data.verifyTodo": { id: "100 hari sampel menunggu diisi dengan data resmi IDX di verification_sample.csv, lalu jalankan sel skor di notebook.", en: "100 sampled days are waiting to be filled with official IDX data in verification_sample.csv; then run the scoring cell in the notebook." },
 
-  /* -------------------------------------------------------------- api */
-  "api.local": { id: "Backend tidak bisa dihubungi di {url}. Jalankan dulu: uvicorn app.main:app --port 8000", en: "Cannot reach the backend at {url}. Start it first: uvicorn app.main:app --port 8000" },
-  "api.remote": {
-    id: "Backend di {url} tidak bisa dihubungi dari {here}. Kemungkinan: (1) server sedang bangun dari mode tidur, tunggu ±1 menit lalu klik \"Coba lagi\"; (2) CORS: tambahkan {here} ke environment variable IHSG_CORS_ORIGINS di backend (atau isi dengan *), lalu redeploy.",
-    en: "The backend at {url} cannot be reached from {here}. Possible causes: (1) the server is waking up from sleep, wait about a minute and click \"Try again\"; (2) CORS: add {here} to the IHSG_CORS_ORIGINS environment variable on the backend (or set it to *), then redeploy.",
-  },
+    /* -------------------------------------------------------------- api */
+    "api.local": { id: "Backend tidak bisa dihubungi di {url}. Jalankan dulu: uvicorn app.main:app --port 8000", en: "Cannot reach the backend at {url}. Start it first: uvicorn app.main:app --port 8000" },
+    "api.remote": {
+        id: "Backend di {url} tidak bisa dihubungi dari {here}. Kemungkinan: (1) server sedang bangun dari mode tidur, tunggu ±1 menit lalu klik \"Coba lagi\"; (2) CORS: tambahkan {here} ke environment variable IHSG_CORS_ORIGINS di backend (atau isi dengan *), lalu redeploy.",
+        en: "The backend at {url} cannot be reached from {here}. Possible causes: (1) the server is waking up from sleep, wait about a minute and click \"Try again\"; (2) CORS: add {here} to the IHSG_CORS_ORIGINS environment variable on the backend (or set it to *), then redeploy.",
+    },"api.crash": {
+        id: "Backend di {url} berhenti saat memproses permintaan ini (halaman lain bisa terhubung, jadi bukan masalah CORS). Penyebab paling umum di Render gratis: kehabisan memori 512 MB saat memuat model. Cek tab Logs di Render, lalu klik \"Coba lagi\".",
+        en: "The backend at {url} stopped while handling this request (other pages connect fine, so this is not CORS). The most common cause on Render's free plan is running out of its 512 MB memory while loading the model. Check the Logs tab on Render, then click \"Try again\".",
+    },
 } satisfies Record<string, Entry>;
 
 export type TKey = keyof typeof D;

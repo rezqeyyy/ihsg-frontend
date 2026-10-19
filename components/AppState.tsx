@@ -7,8 +7,7 @@ interface State {
   metaError: string | null;
   date: string | null;          // selected IHSG session (replay); null = latest in data
   setDate: (d: string | null) => void;
-  model: string | null;         // null = champion
-  setModel: (m: string | null) => void;
+  model: string | null;         // always null = the main model (ensemble) chosen by the notebook
   live: boolean;                // use yfinance instead of replay
   setLive: (v: boolean) => void;
 }
@@ -24,12 +23,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [meta, setMeta] = useState<Meta | null>(null);
   const [metaError, setMetaError] = useState<string | null>(null);
   const [date, setDateS] = useState<string | null>(null);
-  const [model, setModelS] = useState<string | null>(null);
+  const model = null;
   const [live, setLiveS] = useState(false);
 
   useEffect(() => {
     setDateS(read("ihsg.date"));
-    setModelS(read("ihsg.model"));
+    write("ihsg.model", null);  // forget a model picked in older versions of the site
     setLiveS(read("ihsg.live") === "1");
     api.meta().then(setMeta).catch((e: Error) => setMetaError(e.message));
   }, []);
@@ -37,7 +36,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const value: State = {
     meta, metaError, date, model, live,
     setDate: (d) => { setDateS(d); write("ihsg.date", d); },
-    setModel: (m) => { setModelS(m); write("ihsg.model", m); },
     setLive: (v) => { setLiveS(v); write("ihsg.live", v ? "1" : null); },
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

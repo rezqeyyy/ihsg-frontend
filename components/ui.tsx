@@ -83,9 +83,9 @@ export function DataTable({ rows, columns, format, highlight, maxRows }: {
   );
 }
 
-/** Session date + model + live toggle, shared by the estimate and simulator pages. */
+/** Session date + live toggle, shared by the estimate and simulator pages. The model is always the main ensemble. */
 export function SessionControls({ allowLive = true, onRefreshLive }: { allowLive?: boolean; onRefreshLive?: () => void }) {
-  const { meta, date, setDate, model, setModel, live, setLive } = useAppState();
+  const { meta, date, setDate, live, setLive } = useAppState();
   const { t } = useI18n();
   if (!meta) return null;
   return (
@@ -103,16 +103,10 @@ export function SessionControls({ allowLive = true, onRefreshLive }: { allowLive
             onChange={(e) => setDate(e.target.value || null)} />
         </label>
       )}
-      <label className="field">
+      <div className="field">
         {t("ctl.model")}
-        <select value={model ?? meta.champion} onChange={(e) => setModel(e.target.value === meta.champion ? null : e.target.value)}>
-          {meta.models.map((m) => (
-            <option key={m} value={m}>
-              {m === "Ensemble" ? modelLabel(m, meta.ensemble) : m}{m === meta.champion ? ` ${t("ctl.main")}` : ""}
-            </option>
-          ))}
-        </select>
-      </label>
+        <span className="model-badge">{modelLabel(meta.champion, meta.ensemble)}</span>
+      </div>
       {live && allowLive && onRefreshLive && (
         <button className="btn secondary" onClick={onRefreshLive}>{t("ctl.refetch")}</button>
       )}
