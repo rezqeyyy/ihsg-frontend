@@ -41,8 +41,9 @@ export default function EstimatePage() {
 
       {est && (
         <div style={{ opacity: loading ? 0.55 : 1, transition: "opacity .2s" }} key={lang}>
+          {est.in_sample && est.fit_end && <div className="notice">{t("est.inSample", { d: shortDate(est.fit_end) })}</div>}
           {est.warnings.map((w) => <div className="notice" key={w}>{warning(w)}</div>)}
-          {est.warnings.length > 0 && <div style={{ height: 12 }} />}
+          {(est.warnings.length > 0 || est.in_sample) && <div style={{ height: 12 }} />}
 
           <MorningRelay est={est} />
 

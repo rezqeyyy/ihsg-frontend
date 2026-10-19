@@ -1,0 +1,23 @@
+# Pre-market pipeline (proposal Section 3.4.1): every IDX trading morning at about 08:40 WIB
+# the backend fetches the latest prices, estimates the IHSG open and logs it for error tracking.
+# GitHub cron runs in UTC: 01:40 UTC = 08:40 WIB, Monday-Friday. GitHub may start it a few minutes late.
+name: premarket-estimate
+on:
+  schedule:
+    - cron: "40 1 * * 1-5"
+  workflow_dispatch: {}          # "Run workflow" button for a manual test
+jobs:
+  estimate:
+    runs-on: ubuntu-latest
+    env:
+      API: ${{ vars.IHSG_API_URL || 'https://ihsg-backend.onrender.com' }}
+    steps:
+      - name: Wake the backend (free Render instances sleep)
+        run: |
+          for i in $(seq 1 12); do
+            curl -fsS --max-time 30 "$API/api/health" && exit 0
+            echo "not awake yet ($i/12)"; sleep 10
+          done
+          exit 1
+      - name: Live estimate for the next IHSG session
+        run: curl -fsS --max-time 120 -X POST "$API/api/estimate/live?force=true" | head -c 600

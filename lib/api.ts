@@ -60,6 +60,8 @@ export interface Estimate {
   actual_y?: number;
   actual_flagged?: boolean;
   fetched_at?: string;
+  in_sample?: boolean;     // replay date inside the dashboard model's training period
+  fit_end?: string;
 }
 
 export interface SimCurve { key: string; label: string; x: number[]; y: number[]; current: number }

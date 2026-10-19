@@ -48,9 +48,13 @@ export default function PerformancePage() {
             <DataTable
               rows={data.metrics}
               columns={[
-                { key: "model", label: t("col.model") }, { key: "CV_RMSE_dev", label: t("col.cvRmse"), align: "r" },
-                { key: "RMSE", label: "RMSE", align: "r" }, { key: "MAE", label: "MAE", align: "r" },
-                { key: "R2_oos", label: t("col.r2"), align: "r" }, { key: "DA", label: t("col.da"), align: "r" },
+                { key: "model", label: t("col.model") },
+                { key: "CV_RMSE_dev", label: t("col.cvRmse"), align: "r" },
+                { key: "RMSE", label: "RMSE", align: "r" },
+                { key: "MAE", label: "MAE", align: "r" },
+                { key: "R2_oos", label: t("col.r2"), align: "r" },
+                { key: "DA", label: t("col.da"), align: "r" },
+                { key: "DA_balanced", label: t("col.daBal"), align: "r" },
               ]}
               format={{
                 model: (v) => {
@@ -62,6 +66,7 @@ export default function PerformancePage() {
                 CV_RMSE_dev: n4, RMSE: n4, MAE: n4,
                 R2_oos: (v) => (v == null ? "–" : <span className={Number(v) > 0 ? "up" : Number(v) < 0 ? "down" : ""}>{`${Number(v) > 0 ? "+" : ""}${dec(Number(v), 4)}`}</span>),
                 DA: (v) => (v == null ? "–" : pct(Number(v), 1, false)),
+                DA_balanced: (v) => (v == null ? "–" : pct(Number(v), 1, false)),
               }}
               highlight={(r) => r.model === data.champion}
             />

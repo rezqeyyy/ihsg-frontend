@@ -89,6 +89,10 @@ const D = {
   "relay.from": { id: "dari", en: "from" },
 
   /* --------------------------------------------------------- estimate */
+    "est.inSample": {
+    id: "Tanggal ini termasuk data latih model dashboard (sampai {d}), jadi estimasinya in-sample dan tampak lebih akurat dari kenyataan. Untuk akurasi yang jujur, lihat halaman Performa model dan Riwayat (model 2012–2023 yang diuji pada 2024–2025).",
+    en: "This date is inside the dashboard model's training data (up to {d}), so the estimate is in-sample and looks more accurate than it really is. For honest accuracy, see the Model performance and History pages (the 2012–2023 model tested on 2024–2025).",
+  },
   "est.session": { id: "Sesi {d}", en: "Session {d}" },
   "est.loading": { id: "Memuat sesi…", en: "Loading session…" },
   "est.warnClosed": { id: "{m} libur atau belum buka pada {d}, jadi gap-nya dianggap 0.", en: "{m} was closed or not yet open on {d}, so its gap is set to 0." },
@@ -176,13 +180,14 @@ const D = {
   "perf.ensAria": { id: "Komposisi ensemble", en: "Ensemble composition" },
   "perf.metrics": { id: "Metrik error", en: "Error metrics" },
   "perf.metricsNote": {
-    id: "Zero-return = menganggap IHSG buka di harga penutupan kemarin. RMSE, MAE dan CV RMSE dalam poin persentase. R² dihitung terhadap zero-return: negatif berarti lebih buruk daripada menganggap pasar buka di harga kemarin. Akurasi arah dihitung pada hari dengan gap ≠ 0.",
-    en: "Zero-return = assuming the IHSG opens at the previous close. RMSE, MAE and CV RMSE are in percentage points. R² is measured against zero-return: negative means worse than assuming the market opens at yesterday's close. Directional accuracy is computed on days with a non-zero gap.",
+    id: "Zero-return = menganggap IHSG buka di harga penutupan kemarin. RMSE, MAE dan CV RMSE dalam poin persentase. R² dihitung terhadap zero-return: negatif berarti lebih buruk daripada menganggap pasar buka di harga kemarin. Akurasi arah dihitung pada hari dengan gap ≠ 0.  Akurasi arah seimbang = rata-rata akurasi di hari naik dan hari turun, jadi tidak bisa \"menang\" hanya dengan selalu menebak arah yang paling sering (patokannya 50%).",
+    en: "Zero-return = assuming the IHSG opens at the previous close. RMSE, MAE and CV RMSE are in percentage points. R² is measured against zero-return: negative means worse than assuming the market opens at yesterday's close. Directional accuracy is computed on days with a non-zero gap. Balanced directional accuracy = the mean of the hit rates on up days and on down days, so it cannot be gamed by always predicting the more frequent direction (reference 50%).",
   },
   "col.model": { id: "Model", en: "Model" },
   "col.cvRmse": { id: "CV RMSE 2012–23", en: "CV RMSE 2012–23" },
   "col.r2": { id: "R² vs zero", en: "R² vs zero" },
   "col.da": { id: "Akurasi arah", en: "Directional accuracy" },
+  "col.daBal": { id: "Akurasi arah seimbang", en: "Balanced directional accuracy" },
   "model.Zero": { id: "Zero-return", en: "Zero-return" },
   "model.LinearRegression": { id: "Linear Regression", en: "Linear Regression" },
   "model.majorityUp": { id: "Selalu tebak naik", en: "Always predict up" },
