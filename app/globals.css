@@ -400,3 +400,7 @@ table.data tbody tr:last-child td { border-bottom: 0; }
 /* read-only model name in the session controls (the site always uses the main ensemble model) */
 .model-badge { display: inline-flex; align-items: center; min-height: var(--tap); padding: 7px 12px; border: 1px solid var(--rule-strong);
   border-radius: var(--radius-s); background: var(--paper-2); color: var(--ink); font-weight: 650; font-size: var(--t-s); }
+
+/* four stats in one row (history summary); two per row on narrow screens */
+.stat-row.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 720px) { .stat-row.four { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

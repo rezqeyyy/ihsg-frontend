@@ -1,16 +1,26 @@
-# Pre-market pipeline (proposal Section 3.4.1): every IDX trading morning at about 08:40 WIB
-# the backend fetches the latest prices, estimates the IHSG open and logs it for error tracking.
-# GitHub cron runs in UTC: 01:40 UTC = 08:40 WIB, Monday-Friday. GitHub may start it a few minutes late.
+# Daily pipeline (proposal Section 3.4.1), Monday-Friday. GitHub cron runs in UTC (WIB = UTC+7):
+#   01:40 UTC = 08:40 WIB  live estimate for today's IHSG session -> saved in the history (source "live")
+#   02:40 UTC = 09:40 WIB  history sync: today's real opening price is filled in
+#   09:30 UTC = 16:30 WIB  history sync again (Yahoo sometimes publishes the day's bar late);
+#                          any session without an estimate is backfilled from data before that day
+# GitHub may start a scheduled run a few minutes late. "Run workflow" (manual) runs both steps.
+# Optional repository settings (Settings -> Secrets and variables -> Actions):
+#   variable IHSG_API_URL    backend address (default below)
+#   secret   IHSG_SYNC_TOKEN same value as the backend's IHSG_SYNC_TOKEN, if you set one there
 name: premarket-estimate
 on:
   schedule:
     - cron: "40 1 * * 1-5"
-  workflow_dispatch: {}          # "Run workflow" button for a manual test
+    - cron: "40 2 * * 1-5"
+    - cron: "30 9 * * 1-5"
+  workflow_dispatch: {}
 jobs:
-  estimate:
+  run:
     runs-on: ubuntu-latest
     env:
       API: ${{ vars.IHSG_API_URL || 'https://ihsg-backend.onrender.com' }}
+      TOKEN: ${{ secrets.IHSG_SYNC_TOKEN }}
+      CRON: ${{ github.event.schedule }}
     steps:
       - name: Wake the backend (free Render instances sleep)
         run: |
@@ -19,5 +29,9 @@ jobs:
             echo "not awake yet ($i/12)"; sleep 10
           done
           exit 1
-      - name: Live estimate for the next IHSG session
-        run: curl -fsS --max-time 120 -X POST "$API/api/estimate/live?force=true" | head -c 600
+      - name: Live estimate for today's session (08:40 WIB)
+        if: env.CRON == '40 1 * * 1-5' || github.event_name == 'workflow_dispatch'
+        run: curl -fsS --max-time 180 -X POST "$API/api/estimate/live?force=true" | head -c 600; echo
+      - name: History sync - real opens in, missed sessions backfilled
+        if: env.CRON != '40 1 * * 1-5' || github.event_name == 'workflow_dispatch'
+        run: curl -fsS --max-time 300 -X POST -H "X-Sync-Token: $TOKEN" "$API/api/history/sync"; echo

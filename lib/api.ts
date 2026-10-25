@@ -105,9 +105,16 @@ export interface DataQuality {
   verification_sample: Row[];
 }
 
+export interface LiveSummary {
+  n_done: number; n_pending: number; n_flagged: number;
+  mae_points?: number; mae_pp?: number; direction_hit?: number | null; inside_95?: number;
+}
+
 export interface History {
   champion: string;
   live_log: Row[];
+  live_summary?: LiveSummary;
+  persistent?: boolean;
   backtest: { date: string; y: number; y_hat: number; mae_20: number | null; da_20: number | null }[];
 }
 
