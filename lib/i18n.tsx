@@ -48,6 +48,7 @@ const D = {
   "ctl.latest": { id: "Data terbaru", en: "Latest data" },
   "ctl.session": { id: "Sesi IHSG", en: "IHSG session" },
   "ctl.dataUntil": { id: "Data tersedia sampai {d}", en: "Data available up to {d}" },
+  "ctl.model": { id: "Model", en: "Model" },
   "ctl.main": { id: "(utama)", en: "(main)" },
   "ctl.refetch": { id: "Ambil ulang data", en: "Fetch again" },
   "dir.UP": { id: "Naik", en: "Up" },
