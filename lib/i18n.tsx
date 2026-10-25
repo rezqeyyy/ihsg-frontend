@@ -47,7 +47,7 @@ const D = {
   "ctl.historical": { id: "Tanggal historis", en: "Historical date" },
   "ctl.latest": { id: "Data terbaru", en: "Latest data" },
   "ctl.session": { id: "Sesi IHSG", en: "IHSG session" },
-  "ctl.model": { id: "Model", en: "Model" },
+  "ctl.dataUntil": { id: "Data tersedia sampai {d}", en: "Data available up to {d}" },
   "ctl.main": { id: "(utama)", en: "(main)" },
   "ctl.refetch": { id: "Ambil ulang data", en: "Fetch again" },
   "dir.UP": { id: "Naik", en: "Up" },

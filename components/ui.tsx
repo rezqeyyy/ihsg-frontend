@@ -1,7 +1,7 @@
 "use client";
 import type { ReactNode } from "react";
 import type { Row } from "@/lib/api";
-import { modelLabel } from "@/lib/format";
+import { modelLabel, shortDate } from "@/lib/format";
 import { useI18n } from "@/lib/i18n";
 import { useAppState } from "./AppState";
 
@@ -83,13 +83,13 @@ export function DataTable({ rows, columns, format, highlight, maxRows }: {
   );
 }
 
-/** Session date + live toggle, shared by the estimate and simulator pages. The model is always the main ensemble. */
+/** Session date + model + live toggle, shared by the estimate and simulator pages. */
 export function SessionControls({ allowLive = true, onRefreshLive }: { allowLive?: boolean; onRefreshLive?: () => void }) {
   const { meta, date, setDate, live, setLive } = useAppState();
   const { t } = useI18n();
   if (!meta) return null;
   return (
-    <div className="controls">
+    <div className="controls" style={{ paddingBottom: 14 }}>
       {allowLive && (
         <div className="seg" role="group" aria-label={t("ctl.source")}>
           <button aria-pressed={!live} onClick={() => setLive(false)}>{t("ctl.historical")}</button>
@@ -97,10 +97,13 @@ export function SessionControls({ allowLive = true, onRefreshLive }: { allowLive
         </div>
       )}
       {(!live || !allowLive) && (
-        <label className="field">
+        <label className="field" style={{ position: "relative" }}>
           {t("ctl.session")}
           <input type="date" value={date ?? meta.data_last} min={meta.replay_min} max={meta.replay_max}
             onChange={(e) => setDate(e.target.value || null)} />
+          <span className="xs faint" style={{ fontWeight: 400, position: "absolute", top: "100%", left: 0, marginTop: 3, whiteSpace: "nowrap" }}>
+            {t("ctl.dataUntil", { d: shortDate(meta.data_last) })}
+          </span>
         </label>
       )}
       <div className="field">
